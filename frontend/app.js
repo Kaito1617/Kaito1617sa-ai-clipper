@@ -12,6 +12,7 @@ const state = {
   modeActif: 'football',
   dureeActive: 45,
   intensiteActive: 'normal',
+  formatActif: 'portrait',
   nbShorts: 5,
   taskId: null,
   ws: null,
@@ -138,6 +139,14 @@ document.querySelectorAll('[data-intensity]').forEach((btn) => {
   });
 });
 
+document.querySelectorAll('[data-format]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-format]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.formatActif = btn.dataset.format;
+  });
+});
+
 // ─────────────────────────────────────────────
 // Génération — Upload + lancement pipeline
 // ─────────────────────────────────────────────
@@ -162,6 +171,7 @@ btnGenerate.addEventListener('click', async () => {
     formData.append('nb_shorts', state.nbShorts);
     formData.append('duree_short', state.dureeActive);
     formData.append('intensite', state.intensiteActive);
+    formData.append('format_sortie', state.formatActif);
 
     const reponse = await fetch('/api/upload', {
       method: 'POST',

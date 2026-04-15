@@ -25,18 +25,20 @@ def ajouter_sous_titres(
     debut_segment: float,
     config_mode: dict,
     intensite: str,
-    chemin_sortie: str
+    chemin_sortie: str,
+    format_sortie: str = "portrait"
 ) -> bool:
     """
     Ajoute des sous-titres animés mot par mot sur la vidéo.
 
     Args:
-        chemin_video: Vidéo source (déjà recadrée en 9:16)
+        chemin_video: Vidéo source (déjà recadrée)
         mots_segment: Liste de mots avec timecodes {'mot', 'debut', 'fin'}
         debut_segment: Début du segment (pour recalculer les timecodes relatifs)
         config_mode: Config du mode (couleurs, taille...)
         intensite: 'leger', 'normal' ou 'intense'
         chemin_sortie: Fichier de sortie
+        format_sortie: 'portrait' (9:16) ou 'paysage' (16:9)
 
     Returns:
         True si succès
@@ -52,7 +54,15 @@ def ajouter_sous_titres(
     style = config_mode.get("style_sous_titres", {})
     couleur_texte = style.get("couleur_texte", "white")
     couleur_highlight = style.get("couleur_highlight", "yellow")
-    taille_police = style.get("taille_police", 28)
+
+    # Taille police et marges selon le format
+    if format_sortie == "paysage":
+        taille_police = style.get("taille_police", 22)
+        marge_bas = 30
+    else:
+        taille_police = style.get("taille_police", 28)
+        marge_bas = 40
+
     position_y = style.get("position_y", "h-200")  # 200px du bas
 
     # Facteur taille selon intensité
@@ -77,7 +87,8 @@ def ajouter_sous_titres(
         police=police,
         taille_police=taille_police,
         couleur_texte=couleur_texte,
-        chemin_sortie=chemin_sortie
+        chemin_sortie=chemin_sortie,
+        marge_bas=marge_bas
     )
 
     # Nettoyage
@@ -143,7 +154,8 @@ def _appliquer_sous_titres_ffmpeg(
     police: str,
     taille_police: int,
     couleur_texte: str,
-    chemin_sortie: str
+    chemin_sortie: str,
+    marge_bas: int = 40
 ) -> bool:
     """
     Applique les sous-titres via le filtre subtitles de FFmpeg.
@@ -161,7 +173,7 @@ def _appliquer_sous_titres_ffmpeg(
         f"Bold=1,"
         f"Outline=1,"
         f"Shadow=1,"
-        f"MarginV=40,"                # Marge bas
+        f"MarginV={marge_bas},"
         f"Alignment=2"               # Centré en bas
     )
 
