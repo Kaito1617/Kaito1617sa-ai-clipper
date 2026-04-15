@@ -316,12 +316,10 @@ function afficherResultats(msg) {
   resultsSection.classList.remove('hidden');
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // Tous télécharger — URL vérifiée (doit pointer vers notre API locale)
-  if (msg.zip_url && msg.zip_url.startsWith('/api/download/')) {
-    btnDownloadAll.onclick = () => { window.location.href = msg.zip_url; };
-  } else {
-    btnDownloadAll.style.display = 'none';
-  }
+  // Tous télécharger — URL construite côté client à partir du taskId connu
+  const urlZip = `/api/download/${encodeURIComponent(state.taskId)}`;
+  btnDownloadAll.onclick = () => { window.location.assign(urlZip); };
+  btnDownloadAll.style.display = '';
 
   // Vider la grille
   shortsGrid.innerHTML = '';
@@ -342,10 +340,15 @@ function creerCarteShort(short) {
   const modeEmoji = { football: '⚽', anime: '🎌', streamer: '🎮' };
   const emoji = modeEmoji[state.modeActif] || '🎬';
 
-  // Validation de l'URL (doit pointer vers notre API locale)
-  const urlValide = short.url && short.url.startsWith('/api/shorts/');
-  const urlVideo = urlValide ? short.url : '';
-  const nomFichier = urlValide ? short.nom_fichier : '';
+  // Construire l'URL à partir de données connues côté client (pas WebSocket)
+  // short.numero est un entier retourné par le serveur, on le valide
+  const num = parseInt(short.numero, 10);
+  if (!num || num < 1 || num > 20) return div;
+
+  const modesSurs = ['football', 'anime', 'streamer'];
+  const modeActifSur = modesSurs.includes(state.modeActif) ? state.modeActif : 'football';
+  const nomFichierSur = `${modeActifSur}_short_${num}.mp4`;
+  const urlVideo = `/api/shorts/${encodeURIComponent(state.taskId)}/${nomFichierSur}`;
 
   // Utilisation du DOM API pour éviter le XSS
   const videoWrap = document.createElement('div');
@@ -353,7 +356,7 @@ function creerCarteShort(short) {
 
   const video = document.createElement('video');
   video.className = 'short-video';
-  if (urlVideo) video.src = urlVideo;
+  video.src = urlVideo;
   video.controls = true;
   video.preload = 'metadata';
   video.playsInline = true;
@@ -361,12 +364,13 @@ function creerCarteShort(short) {
 
   const badge = document.createElement('div');
   badge.className = 'short-badge';
-  badge.textContent = `${emoji} Short #${short.numero}`;
+  badge.textContent = `${emoji} Short #${num}`;
   videoWrap.appendChild(badge);
 
   const score = document.createElement('div');
   score.className = 'short-score';
-  score.textContent = `⭐ ${short.score}/100`;
+  const scoreVal = parseFloat(short.score) || 0;
+  score.textContent = `⭐ ${scoreVal}/100`;
   videoWrap.appendChild(score);
 
   const info = document.createElement('div');
@@ -377,20 +381,22 @@ function creerCarteShort(short) {
 
   const titre = document.createElement('span');
   titre.className = 'short-title';
-  titre.textContent = `Short #${short.numero}`;
+  titre.textContent = `Short #${num}`;
   meta.appendChild(titre);
 
+  const duree = parseFloat(short.duree) || 0;
+  const taille = parseFloat(short.taille_mo) || 0;
   const details = document.createElement('span');
   details.className = 'short-details';
-  details.textContent = `${short.duree}s · ${short.taille_mo} Mo`;
+  details.textContent = `${duree}s · ${taille} Mo`;
   meta.appendChild(details);
 
   info.appendChild(meta);
 
   const lienDl = document.createElement('a');
   lienDl.className = 'btn-dl';
-  if (urlVideo) lienDl.href = urlVideo;
-  if (nomFichier) lienDl.download = nomFichier;
+  lienDl.href = urlVideo;
+  lienDl.download = nomFichierSur;
   lienDl.textContent = '⬇ DL';
   info.appendChild(lienDl);
 
