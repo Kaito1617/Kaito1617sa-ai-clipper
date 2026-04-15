@@ -52,20 +52,20 @@ def ajouter_sous_titres(
     style = config_mode.get("style_sous_titres", {})
     couleur_texte = style.get("couleur_texte", "white")
     couleur_highlight = style.get("couleur_highlight", "yellow")
-    taille_police = style.get("taille_police", 65)
+    taille_police = style.get("taille_police", 28)
     position_y = style.get("position_y", "h-200")  # 200px du bas
 
     # Facteur taille selon intensité
     if intensite == "intense":
-        taille_police = int(taille_police * 1.2)
+        taille_police = int(taille_police * 1.1)
     elif intensite == "leger":
-        taille_police = int(taille_police * 0.9)
+        taille_police = int(taille_police * 0.95)
 
     # Sélection de la police
     police = _trouver_police()
 
-    # Regrouper les mots en lignes (max 3-4 mots par ligne)
-    groupes = _grouper_mots(mots_segment, max_mots_par_groupe=3)
+    # Regrouper les mots en lignes (max 6 mots par ligne)
+    groupes = _grouper_mots(mots_segment, max_mots_par_groupe=6)
 
     # Génération du fichier SRT pour FFmpeg subtitle filter
     chemin_srt = _generer_srt(groupes, debut_segment)
@@ -87,7 +87,7 @@ def ajouter_sous_titres(
     return succes
 
 
-def _grouper_mots(mots: List[dict], max_mots_par_groupe: int = 3) -> List[dict]:
+def _grouper_mots(mots: List[dict], max_mots_par_groupe: int = 6) -> List[dict]:
     """
     Groupe les mots en lignes de sous-titres (max N mots par groupe).
     Chaque groupe a un 'debut', 'fin' et 'texte'.
@@ -102,7 +102,7 @@ def _grouper_mots(mots: List[dict], max_mots_par_groupe: int = 3) -> List[dict]:
             groupes.append({
                 "debut": groupe_mots[0]["debut"],
                 "fin": groupe_mots[-1]["fin"],
-                "texte": texte.upper()  # Uppercase style créateur
+                "texte": texte  # Casse normale
             })
         i += max_mots_par_groupe
 
@@ -159,9 +159,9 @@ def _appliquer_sous_titres_ffmpeg(
         f"OutlineColour=&H00000000,"  # Contour noir
         f"BackColour=&H80000000,"     # Fond semi-transparent
         f"Bold=1,"
-        f"Outline=3,"
-        f"Shadow=2,"
-        f"MarginV=80,"                # Marge bas
+        f"Outline=1,"
+        f"Shadow=1,"
+        f"MarginV=40,"                # Marge bas
         f"Alignment=2"               # Centré en bas
     )
 
