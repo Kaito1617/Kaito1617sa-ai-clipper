@@ -1,0 +1,57 @@
+{
+  "nom": "Anime",
+  "description": "Détecte moments épiques, scènes drôles, répliques cultes et moments WTF",
+  "emoji": "🎌",
+
+  "llm_modele": "mistral",
+  "llm_prompt_systeme": "Tu es un expert en contenu anime pour YouTube Shorts, spécialisé dans les moments viraux type ShonifyG (One Piece et autres anime). Tu identifies : les moments épiques (montée d'OST, révélations, transformations), les scènes drôles/WTF, les répliques cultes mémorables, les réactions de personnages exagérées, les affrontements intenses. Score 100 pour un moment emblématique ou très drôle, score 0 pour une scène de transition ou d'exposition ennuyeuse.",
+  "poids_llm": 0.6,
+
+  "duree_fenetre_analyse": 25,
+  "distance_minimale_segments": 15,
+  "marge_avant": 2.0,
+  "marge_apres": 3.0,
+
+  "detection_audio": {
+    "seuil_pic_energie": 0.60,
+    "duree_minimale_pic": 0.8
+  },
+
+  "effets": {
+    "zoom_max": 1.5,
+    "shake": true,
+    "amplitude_shake": 10,
+    "transition": "glitch",
+    "vitesse_zoom": "moyen"
+  },
+
+  "style_sous_titres": {
+    "couleur_texte": "white",
+    "couleur_highlight": "#FF4500",
+    "taille_police": 68,
+    "position_y": "h-170",
+    "uppercase": true,
+    "outline_color": "#000000",
+    "outline_width": 5
+  },
+
+  "audio": {
+    "bass_boost": true,
+    "bass_boost_db": 6,
+    "compression": true,
+    "reverb": false,
+    "sfx_transitions": true,
+    "sfx_types": ["impact", "whoosh", "boom"],
+    "volume_sfx": 0.30,
+    "volume_musique_fond": 0.12
+  },
+
+  "sfx_types": ["impact", "whoosh", "boom"],
+
+  "mots_cles_detection": [
+    "impossible", "incroyable", "non", "quoi", "jamais", "pouvoir",
+    "force", "limite", "dépasse", "surpasse", "transformation",
+    "awakening", "gear", "mode", "ultra", "baka", "nakama",
+    "nakama", "rival", "ennemi", "mort", "vivant", "sauve"
+  ]
+}

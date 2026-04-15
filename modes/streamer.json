@@ -1,0 +1,57 @@
+{
+  "nom": "Streamer",
+  "description": "Détecte cris, fous rires, rage, fails et réactions extrêmes de streamers",
+  "emoji": "🎮",
+
+  "llm_modele": "mistral",
+  "llm_prompt_systeme": "Tu es un expert en contenu streamer pour YouTube Shorts, style JynxziJ (R6 Siege) et autres top streamers. Tu identifies : les moments de rage (mort injuste, bug, défaite), les fous rires incontrôlables, les fails épiques, les réactions de choc extrêmes, les moments de hype (clutch, win improbable), les interactions drôles avec le chat. Score 100 pour un moment ultra réactif ou drôle, score 0 pour un moment calme ou de setup ennuyeux.",
+  "poids_llm": 0.55,
+
+  "duree_fenetre_analyse": 20,
+  "distance_minimale_segments": 10,
+  "marge_avant": 1.5,
+  "marge_apres": 2.5,
+
+  "detection_audio": {
+    "seuil_pic_energie": 0.70,
+    "duree_minimale_pic": 0.5
+  },
+
+  "effets": {
+    "zoom_max": 1.6,
+    "shake": true,
+    "amplitude_shake": 12,
+    "transition": "swipe",
+    "vitesse_zoom": "tres_rapide"
+  },
+
+  "style_sous_titres": {
+    "couleur_texte": "white",
+    "couleur_highlight": "#00FF88",
+    "taille_police": 65,
+    "position_y": "h-160",
+    "uppercase": true,
+    "outline_color": "#000000",
+    "outline_width": 4
+  },
+
+  "audio": {
+    "bass_boost": false,
+    "bass_boost_db": 3,
+    "compression": true,
+    "reverb": true,
+    "sfx_transitions": true,
+    "sfx_types": ["vine_boom", "whoosh", "bruh"],
+    "volume_sfx": 0.35,
+    "volume_musique_fond": 0.08
+  },
+
+  "sfx_types": ["vine_boom", "whoosh", "bruh"],
+
+  "mots_cles_detection": [
+    "non", "quoi", "sérieux", "putain", "incroyable", "impossible",
+    "let's go", "bro", "no way", "what", "omg", "wtf",
+    "rage", "rire", "fail", "clutch", "kill", "mort", "chat",
+    "sub", "donate", "haha", "lol", "clip", "insane", "cringe"
+  ]
+}

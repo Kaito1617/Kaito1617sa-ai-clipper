@@ -1,0 +1,56 @@
+{
+  "nom": "Football",
+  "description": "Détecte buts, dribbles, célébrations et réactions spectaculaires",
+  "emoji": "⚽",
+
+  "llm_modele": "mistral",
+  "llm_prompt_systeme": "Tu es un expert en montage vidéo football pour YouTube Shorts. Tu analyses des transcriptions de matchs ou compilations football. Tu dois identifier les moments les PLUS excitants : buts, dribbles incroyables, célébrations épiques, réactions des commentateurs, foule en délire, parades du gardien. Score 100 pour un but ou moment WTF, score 0 pour un moment ennuyeux (passe en retrait, temps mort).",
+  "poids_llm": 0.5,
+
+  "duree_fenetre_analyse": 30,
+  "distance_minimale_segments": 20,
+  "marge_avant": 3.0,
+  "marge_apres": 2.0,
+
+  "detection_audio": {
+    "seuil_pic_energie": 0.65,
+    "duree_minimale_pic": 1.0
+  },
+
+  "effets": {
+    "zoom_max": 1.4,
+    "shake": true,
+    "amplitude_shake": 6,
+    "transition": "fade",
+    "vitesse_zoom": "rapide"
+  },
+
+  "style_sous_titres": {
+    "couleur_texte": "white",
+    "couleur_highlight": "#FFD700",
+    "taille_police": 70,
+    "position_y": "h-180",
+    "uppercase": true,
+    "outline_color": "black",
+    "outline_width": 4
+  },
+
+  "audio": {
+    "bass_boost": false,
+    "bass_boost_db": 3,
+    "compression": true,
+    "reverb": false,
+    "sfx_transitions": true,
+    "sfx_types": ["whoosh", "impact"],
+    "volume_sfx": 0.25,
+    "volume_musique_fond": 0.10
+  },
+
+  "sfx_types": ["whoosh", "impact"],
+
+  "mots_cles_detection": [
+    "but", "goal", "penalty", "gardien", "tire", "frappe", "dribble",
+    "incroyable", "magnifique", "quelle", "superbe", "oh", "ah",
+    "célébration", "victoire", "défaite", "finale", "champion"
+  ]
+}
