@@ -28,7 +28,8 @@ def exporter_shorts(
     intensite: str,
     dossier_sortie: str,
     task_id: str,
-    callback_progression: Optional[Callable] = None
+    callback_progression: Optional[Callable] = None,
+    format_sortie: str = "portrait"
 ) -> List[dict]:
     """
     Pipeline d'export complet pour tous les Shorts sélectionnés.
@@ -79,7 +80,8 @@ def exporter_shorts(
                 musique_fond=musique_fond,
                 chemin_sortie=chemin_final,
                 dossier_temp=dossier_temp,
-                numero=numero
+                numero=numero,
+                format_sortie=format_sortie
             )
 
             if succes and os.path.exists(chemin_final):
@@ -121,7 +123,8 @@ def _exporter_un_short(
     musique_fond: Optional[str],
     chemin_sortie: str,
     dossier_temp: str,
-    numero: int
+    numero: int,
+    format_sortie: str = "portrait"
 ) -> bool:
     """
     Exporte un seul Short en appliquant le pipeline complet :
@@ -147,7 +150,8 @@ def _exporter_un_short(
         zones_detection=zones_detection,
         config_mode=config_mode,
         intensite=intensite,
-        chemin_sortie=chemin_avec_effets
+        chemin_sortie=chemin_avec_effets,
+        format_sortie=format_sortie
     )
 
     if not succes or not os.path.exists(chemin_avec_effets):
@@ -165,7 +169,8 @@ def _exporter_un_short(
         debut_segment=debut,
         config_mode=config_mode,
         intensite=intensite,
-        chemin_sortie=chemin_avec_subs
+        chemin_sortie=chemin_avec_subs,
+        format_sortie=format_sortie
     )
 
     source_pour_audio = chemin_avec_subs if os.path.exists(chemin_avec_subs) else chemin_avec_effets

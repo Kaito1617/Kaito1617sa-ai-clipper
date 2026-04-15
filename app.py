@@ -136,7 +136,8 @@ async def upload_et_traiter(
     mode: str = Form("football"),
     nb_shorts: int = Form(5),
     duree_short: int = Form(45),
-    intensite: str = Form("normal")
+    intensite: str = Form("normal"),
+    format_sortie: str = Form("portrait")
 ):
     """
     Endpoint principal : upload la vidéo et lance le pipeline de traitement.
@@ -151,6 +152,8 @@ async def upload_et_traiter(
         return JSONResponse({"erreur": "Durée invalide. Choisir : 30, 45 ou 60 secondes"}, status_code=400)
     if intensite not in ("leger", "normal", "intense"):
         return JSONResponse({"erreur": "Intensité invalide. Choisir : leger, normal, intense"}, status_code=400)
+    if format_sortie not in ("portrait", "paysage"):
+        return JSONResponse({"erreur": "Format invalide. Choisir : portrait, paysage"}, status_code=400)
 
     # Validation du format vidéo
     extensions_acceptees = {".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".ts"}
@@ -190,6 +193,7 @@ async def upload_et_traiter(
         "nb_shorts": nb_shorts,
         "duree_short": duree_short,
         "intensite": intensite,
+        "format_sortie": format_sortie,
         "nom_video": video.filename,
         "shorts": []
     }
@@ -202,7 +206,8 @@ async def upload_et_traiter(
             mode=mode,
             nb_shorts=nb_shorts,
             duree_short=duree_short,
-            intensite=intensite
+            intensite=intensite,
+            format_sortie=format_sortie
         )
     )
 
@@ -223,7 +228,8 @@ async def lancer_pipeline(
     mode: str,
     nb_shorts: int,
     duree_short: int,
-    intensite: str
+    intensite: str,
+    format_sortie: str = "portrait"
 ):
     """
     Pipeline complet de traitement :
@@ -306,7 +312,8 @@ async def lancer_pipeline(
             intensite,
             dossier_sortie,
             task_id,
-            None
+            None,
+            format_sortie
         )
 
         if not shorts:
