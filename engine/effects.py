@@ -62,13 +62,15 @@ def appliquer_effets(
 
     if format_sortie == "paysage":
         # Mode 16:9 : effets très subtils, pas de crop agressif
-        zoom_max = config_effets.get("zoom_max", 1.05) * min(facteur, 1.0)
+        zoom_base = config_effets.get("zoom_max", 1.05)
+        zoom_max = 1.0 + (zoom_base - 1.0) * min(facteur, 1.0)
         zoom_max = min(zoom_max, 1.05)  # Jamais plus de 1.05x en paysage
         activer_shake = config_effets.get("shake", True) and intensite == "intense"
         amplitude_shake = config_effets.get("amplitude_shake", 8) * facteur / 4
     else:
         # Mode portrait 9:16 : zoom réduit par rapport à l'ancienne valeur
-        zoom_max = config_effets.get("zoom_max", 1.15) * facteur
+        zoom_base = config_effets.get("zoom_max", 1.15)
+        zoom_max = 1.0 + (zoom_base - 1.0) * facteur
         zoom_max = min(zoom_max, 1.5)  # Limite plus basse qu'avant
         activer_shake = config_effets.get("shake", True) and intensite != "leger"
         amplitude_shake = config_effets.get("amplitude_shake", 4) * facteur
@@ -178,7 +180,7 @@ def _construire_filtres_ffmpeg(
         filtres.append(f"scale={LARGEUR_PAYSAGE}:{HAUTEUR_PAYSAGE}:force_original_aspect_ratio=decrease:flags=lanczos")
         filtres.append(f"pad={LARGEUR_PAYSAGE}:{HAUTEUR_PAYSAGE}:(ow-iw)/2:(oh-ih)/2")
     else:
-        # Mode portrait 9:16 : recadrage avec suivi du sujet
+        # Mode portrait 9:16 : crop 9:16 centré sur le sujet via cx_ratio/cy_ratio
         crop_largeur = "min(iw\\,ih*9/16)"
         crop_hauteur = "min(ih\\,iw*16/9)"
         crop_filter = (
