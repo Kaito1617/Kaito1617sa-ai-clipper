@@ -154,16 +154,17 @@ def _construire_filtres_ffmpeg(
     """
     filtres = []
 
-    # 1. Recadrage 9:16 avec suivi du sujet
-    # On extrait la largeur/hauteur depuis la vidéo source dynamiquement
-    # On utilise crop basé sur les ratios
-    # Largeur du crop = hauteur_source * (9/16)
+    # 1. Recadrage 9:16 avec suivi du sujet (horizontal ET vertical)
+    # Largeur du crop = hauteur_source * (9/16) pour le format vertical
+    # Position X et Y basées sur les ratios calculés depuis YOLO
+    crop_largeur = "min(iw\\,ih*9/16)"
+    crop_hauteur = "min(ih\\,iw*16/9)"
     crop_filter = (
         f"crop="
-        f"min(iw\\,ih*9/16):"       # largeur = hauteur * 9/16
-        f"ih:"                       # hauteur = hauteur source
-        f"(iw-min(iw\\,ih*9/16))*{cx_ratio:.3f}:"  # position X centrée
-        f"0"                         # position Y = 0
+        f"{crop_largeur}:"             # largeur = hauteur * 9/16
+        f"{crop_hauteur}:"             # hauteur = largeur * 16/9
+        f"(iw-{crop_largeur})*{cx_ratio:.3f}:"   # position X selon cx_ratio
+        f"(ih-{crop_hauteur})*{cy_ratio:.3f}"    # position Y selon cy_ratio
     )
     filtres.append(crop_filter)
 

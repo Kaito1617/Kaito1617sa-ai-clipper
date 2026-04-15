@@ -316,9 +316,11 @@ function afficherResultats(msg) {
   resultsSection.classList.remove('hidden');
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // Tous télécharger
-  if (msg.zip_url) {
-    btnDownloadAll.onclick = () => window.location.href = msg.zip_url;
+  // Tous télécharger — URL vérifiée (doit pointer vers notre API locale)
+  if (msg.zip_url && msg.zip_url.startsWith('/api/download/')) {
+    btnDownloadAll.onclick = () => { window.location.href = msg.zip_url; };
+  } else {
+    btnDownloadAll.style.display = 'none';
   }
 
   // Vider la grille
@@ -340,22 +342,60 @@ function creerCarteShort(short) {
   const modeEmoji = { football: '⚽', anime: '🎌', streamer: '🎮' };
   const emoji = modeEmoji[state.modeActif] || '🎬';
 
-  div.innerHTML = `
-    <div class="short-video-wrap">
-      <video class="short-video" src="${short.url}" controls preload="metadata" playsinline></video>
-      <div class="short-badge">${emoji} Short #${short.numero}</div>
-      <div class="short-score">⭐ ${short.score}/100</div>
-    </div>
-    <div class="short-info">
-      <div class="short-meta">
-        <span class="short-title">Short #${short.numero}</span>
-        <span class="short-details">${short.duree}s · ${short.taille_mo} Mo</span>
-      </div>
-      <a class="btn-dl" href="${short.url}" download="${short.nom_fichier}">
-        ⬇ DL
-      </a>
-    </div>
-  `;
+  // Validation de l'URL (doit pointer vers notre API locale)
+  const urlValide = short.url && short.url.startsWith('/api/shorts/');
+  const urlVideo = urlValide ? short.url : '';
+  const nomFichier = urlValide ? short.nom_fichier : '';
+
+  // Utilisation du DOM API pour éviter le XSS
+  const videoWrap = document.createElement('div');
+  videoWrap.className = 'short-video-wrap';
+
+  const video = document.createElement('video');
+  video.className = 'short-video';
+  if (urlVideo) video.src = urlVideo;
+  video.controls = true;
+  video.preload = 'metadata';
+  video.playsInline = true;
+  videoWrap.appendChild(video);
+
+  const badge = document.createElement('div');
+  badge.className = 'short-badge';
+  badge.textContent = `${emoji} Short #${short.numero}`;
+  videoWrap.appendChild(badge);
+
+  const score = document.createElement('div');
+  score.className = 'short-score';
+  score.textContent = `⭐ ${short.score}/100`;
+  videoWrap.appendChild(score);
+
+  const info = document.createElement('div');
+  info.className = 'short-info';
+
+  const meta = document.createElement('div');
+  meta.className = 'short-meta';
+
+  const titre = document.createElement('span');
+  titre.className = 'short-title';
+  titre.textContent = `Short #${short.numero}`;
+  meta.appendChild(titre);
+
+  const details = document.createElement('span');
+  details.className = 'short-details';
+  details.textContent = `${short.duree}s · ${short.taille_mo} Mo`;
+  meta.appendChild(details);
+
+  info.appendChild(meta);
+
+  const lienDl = document.createElement('a');
+  lienDl.className = 'btn-dl';
+  if (urlVideo) lienDl.href = urlVideo;
+  if (nomFichier) lienDl.download = nomFichier;
+  lienDl.textContent = '⬇ DL';
+  info.appendChild(lienDl);
+
+  div.appendChild(videoWrap);
+  div.appendChild(info);
 
   return div;
 }

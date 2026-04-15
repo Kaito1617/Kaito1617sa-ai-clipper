@@ -150,8 +150,8 @@ def _appliquer_audio_ffmpeg(
         )
         nb_inputs += 1
     else:
-        # Renommage final si pas de musique
-        filtres_complexes.append(f"{sortie_actuelle}acopy[a_final]")
+        # Pas de mixage supplémentaire — juste appliquer les filtres audio
+        filtres_complexes.append(f"{sortie_actuelle}anull[a_final]")
 
     # Construction commande
     cmd = ["ffmpeg", "-y"] + inputs + [

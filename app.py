@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import shutil
 import time
 import uuid
@@ -38,8 +39,8 @@ app = FastAPI(
 )
 
 # Dossiers de travail
-DOSSIER_UPLOADS = Path("uploads")
-DOSSIER_OUTPUT = Path("output")
+DOSSIER_UPLOADS = Path("uploads").resolve()
+DOSSIER_OUTPUT = Path("output").resolve()
 DOSSIER_UPLOADS.mkdir(exist_ok=True)
 DOSSIER_OUTPUT.mkdir(exist_ok=True)
 
@@ -48,6 +49,27 @@ taches_en_cours: Dict[str, dict] = {}
 
 # Connexions WebSocket actives {task_id: WebSocket}
 connexions_ws: Dict[str, WebSocket] = {}
+
+# Expression régulière pour valider un task_id (8 caractères alphanumériques et tirets)
+_RE_TASK_ID = re.compile(r'^[0-9a-f\-]{8,36}$')
+# Expression régulière pour valider un nom de fichier MP4/ZIP sûr
+_RE_NOM_FICHIER = re.compile(r'^[a-zA-Z0-9_\-]{1,80}\.(mp4|zip)$')
+
+
+def _valider_task_id(task_id: str) -> bool:
+    """Valide que le task_id ne contient que des caractères sûrs."""
+    return bool(_RE_TASK_ID.match(task_id))
+
+
+def _chemin_safe(base: Path, *parties) -> Path:
+    """
+    Résout un chemin et vérifie qu'il est bien dans le répertoire base.
+    Lève ValueError si le chemin sort du répertoire autorisé (path traversal).
+    """
+    chemin = (base / Path(*parties)).resolve()
+    if not str(chemin).startswith(str(base)):
+        raise ValueError(f"Chemin non autorisé : {chemin}")
+    return chemin
 
 
 # ─────────────────────────────────────────────
@@ -155,7 +177,8 @@ async def upload_et_traiter(
             f.write(contenu)
         logger.info(f"Vidéo uploadée : {video.filename} ({len(contenu) // 1024 // 1024} Mo) → {task_id}")
     except Exception as e:
-        return JSONResponse({"erreur": f"Erreur sauvegarde : {str(e)}"}, status_code=500)
+        logger.error(f"Erreur sauvegarde vidéo : {e}")
+        return JSONResponse({"erreur": "Erreur lors de la sauvegarde du fichier"}, status_code=500)
 
     # Initialisation de la tâche
     taches_en_cours[task_id] = {
@@ -349,6 +372,8 @@ def _charger_config_mode(mode: str) -> dict:
 @app.get("/api/status/{task_id}")
 async def statut_tache(task_id: str):
     """Retourne le statut actuel d'une tâche."""
+    if not _valider_task_id(task_id):
+        return JSONResponse({"erreur": "Identifiant de tâche invalide"}, status_code=400)
     tache = taches_en_cours.get(task_id)
     if not tache:
         return JSONResponse({"erreur": "Tâche introuvable"}, status_code=404)
@@ -358,9 +383,17 @@ async def statut_tache(task_id: str):
 @app.get("/api/shorts/{task_id}/{nom_fichier}")
 async def telecharger_short(task_id: str, nom_fichier: str):
     """Sert un Short généré pour lecture/téléchargement."""
-    # Sécurité : éviter le path traversal
+    # Validation stricte des paramètres pour éviter le path traversal
+    if not _valider_task_id(task_id):
+        return JSONResponse({"erreur": "Identifiant de tâche invalide"}, status_code=400)
     nom_fichier = Path(nom_fichier).name
-    chemin = DOSSIER_OUTPUT / task_id / nom_fichier
+    if not _RE_NOM_FICHIER.match(nom_fichier):
+        return JSONResponse({"erreur": "Nom de fichier invalide"}, status_code=400)
+
+    try:
+        chemin = _chemin_safe(DOSSIER_OUTPUT, task_id, nom_fichier)
+    except ValueError:
+        return JSONResponse({"erreur": "Accès refusé"}, status_code=403)
 
     if not chemin.exists():
         return JSONResponse({"erreur": "Fichier introuvable"}, status_code=404)
@@ -375,7 +408,14 @@ async def telecharger_short(task_id: str, nom_fichier: str):
 @app.get("/api/download/{task_id}")
 async def telecharger_zip(task_id: str):
     """Télécharge le ZIP contenant tous les Shorts d'une tâche."""
-    chemin_zip = DOSSIER_OUTPUT / task_id / f"shorts_{task_id}.zip"
+    if not _valider_task_id(task_id):
+        return JSONResponse({"erreur": "Identifiant de tâche invalide"}, status_code=400)
+
+    nom_zip = f"shorts_{task_id}.zip"
+    try:
+        chemin_zip = _chemin_safe(DOSSIER_OUTPUT, task_id, nom_zip)
+    except ValueError:
+        return JSONResponse({"erreur": "Accès refusé"}, status_code=403)
 
     if not chemin_zip.exists():
         return JSONResponse({"erreur": "Archive ZIP introuvable"}, status_code=404)
@@ -383,20 +423,27 @@ async def telecharger_zip(task_id: str):
     return FileResponse(
         str(chemin_zip),
         media_type="application/zip",
-        headers={"Content-Disposition": f"attachment; filename=shorts_{task_id}.zip"}
+        headers={"Content-Disposition": f"attachment; filename={nom_zip}"}
     )
 
 
 @app.delete("/api/tache/{task_id}")
 async def supprimer_tache(task_id: str):
     """Supprime les fichiers d'une tâche terminée pour libérer de l'espace."""
-    # Nettoyage dossiers
-    for dossier in [DOSSIER_UPLOADS / task_id, DOSSIER_OUTPUT / task_id]:
-        if dossier.exists():
-            shutil.rmtree(dossier, ignore_errors=True)
+    if not _valider_task_id(task_id):
+        return JSONResponse({"erreur": "Identifiant de tâche invalide"}, status_code=400)
+
+    # Nettoyage dossiers (chemins vérifiés)
+    for base in [DOSSIER_UPLOADS, DOSSIER_OUTPUT]:
+        try:
+            dossier = _chemin_safe(base, task_id)
+            if dossier.exists():
+                shutil.rmtree(dossier, ignore_errors=True)
+        except ValueError:
+            pass  # Chemin non autorisé, on ignore
 
     taches_en_cours.pop(task_id, None)
-    return JSONResponse({"message": f"Tâche {task_id} supprimée"})
+    return JSONResponse({"message": f"Tâche supprimée"})
 
 
 # ─────────────────────────────────────────────
