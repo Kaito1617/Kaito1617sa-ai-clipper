@@ -1,0 +1,37 @@
+# AI Clipper — Dépendances Python
+# Compatible Python 3.10+
+
+# ── Serveur web ──
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# ── Transcription audio (Whisper GPU) ──
+faster-whisper==1.1.0
+# Note : faster-whisper requiert CTranslate2 avec support CUDA
+# Si CUDA n'est pas dispo, la version CPU sera utilisée automatiquement
+
+# ── Analyse audio ──
+librosa==0.10.2
+soundfile==0.12.1
+numpy==1.26.4
+
+# ── Détection visuelle (YOLO) ──
+ultralytics==8.3.52
+opencv-python-headless==4.10.0.84
+
+# ── Traitement vidéo ──
+# FFmpeg doit être installé séparément (voir README)
+# subprocess est utilisé directement pour appeler FFmpeg
+
+# ── HTTP (pour Ollama API) ──
+requests==2.32.3
+httpx==0.28.1
+
+# ── Utilitaires ──
+python-dotenv==1.0.1
+aiofiles==24.1.0
+
+# ── GPU CUDA (optionnel — décommente si nécessaire) ──
+# torch>=2.0.0
+# torchaudio>=2.0.0

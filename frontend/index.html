@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Clipper — Machine à YouTube Shorts</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">AI <span class="accent">Clipper</span></span>
+      </div>
+      <div class="header-badge">
+        <span class="dot-live"></span>
+        Local · 100% Privé
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- Titre hero -->
+    <section class="hero">
+      <h1 class="hero-title">
+        Transforme tes vidéos en<br />
+        <span class="gradient-text">YouTube Shorts</span> en 1 clic
+      </h1>
+      <p class="hero-sub">
+        IA locale · Recadrage 9:16 · Sous-titres animés · Effets automatiques
+      </p>
+    </section>
+
+    <!-- ── ZONE D'UPLOAD ── -->
+    <section class="card upload-card" id="upload-section">
+      <div class="drop-zone" id="drop-zone">
+        <div class="drop-icon">📹</div>
+        <div class="drop-text">
+          <strong>Glisse ta vidéo ici</strong>
+          <span>ou <button class="link-btn" onclick="document.getElementById('file-input').click()">clique pour choisir</button></span>
+          <small>MP4, MKV, AVI, MOV, WEBM — jusqu'à 10 Go</small>
+        </div>
+        <input type="file" id="file-input" accept="video/*" hidden />
+      </div>
+
+      <!-- Aperçu fichier sélectionné -->
+      <div class="file-preview hidden" id="file-preview">
+        <span class="file-icon">🎥</span>
+        <span class="file-name" id="file-name">video.mp4</span>
+        <span class="file-size" id="file-size">0 Mo</span>
+        <button class="btn-remove" id="btn-remove" title="Supprimer">✕</button>
+      </div>
+    </section>
+
+    <!-- ── SÉLECTION DU MODE ── -->
+    <section class="card config-card">
+      <h2 class="section-title">Mode de détection</h2>
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="football">
+          <span class="mode-emoji">⚽</span>
+          <span class="mode-name">Football</span>
+          <span class="mode-desc">Buts, dribbles, célébrations</span>
+        </button>
+        <button class="mode-btn" data-mode="anime">
+          <span class="mode-emoji">🎌</span>
+          <span class="mode-name">Anime</span>
+          <span class="mode-desc">Moments épiques, scènes drôles</span>
+        </button>
+        <button class="mode-btn" data-mode="streamer">
+          <span class="mode-emoji">🎮</span>
+          <span class="mode-name">Streamer</span>
+          <span class="mode-desc">Cris, fails, réactions extrêmes</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── PARAMÈTRES ── -->
+    <section class="card params-card">
+      <h2 class="section-title">Paramètres</h2>
+      <div class="params-grid">
+
+        <!-- Nombre de shorts -->
+        <div class="param-group">
+          <label class="param-label">
+            Nombre de Shorts
+            <span class="param-value" id="nb-shorts-val">5</span>
+          </label>
+          <input type="range" class="slider" id="nb-shorts" min="1" max="15" value="5" />
+          <div class="slider-labels"><span>1</span><span>15</span></div>
+        </div>
+
+        <!-- Durée -->
+        <div class="param-group">
+          <label class="param-label">Durée des Shorts</label>
+          <div class="toggle-group">
+            <button class="toggle-btn" data-duration="30">30s</button>
+            <button class="toggle-btn active" data-duration="45">45s</button>
+            <button class="toggle-btn" data-duration="60">60s</button>
+          </div>
+        </div>
+
+        <!-- Intensité -->
+        <div class="param-group">
+          <label class="param-label">Intensité des effets</label>
+          <div class="toggle-group">
+            <button class="toggle-btn" data-intensity="leger">🌙 Léger</button>
+            <button class="toggle-btn active" data-intensity="normal">⚡ Normal</button>
+            <button class="toggle-btn" data-intensity="intense">🔥 Intense</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── BOUTON GÉNÉRER ── -->
+    <section class="generate-section">
+      <button class="btn-generate" id="btn-generate" disabled>
+        <span class="btn-icon">✨</span>
+        <span class="btn-label">Générer les Shorts</span>
+      </button>
+      <p class="generate-hint">Sélectionne une vidéo pour commencer</p>
+    </section>
+
+    <!-- ── PROGRESSION ── -->
+    <section class="card progress-card hidden" id="progress-section">
+      <div class="progress-header">
+        <h2 class="section-title">Traitement en cours</h2>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+
+      <div class="progress-steps">
+        <div class="step" id="step-transcription">
+          <span class="step-icon">🎙️</span>
+          <span class="step-name">Transcription</span>
+          <span class="step-status">—</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step-analyse">
+          <span class="step-icon">🧠</span>
+          <span class="step-name">Analyse IA</span>
+          <span class="step-status">—</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step-decoupe">
+          <span class="step-icon">✂️</span>
+          <span class="step-name">Découpe</span>
+          <span class="step-status">—</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step-effets">
+          <span class="step-icon">🔥</span>
+          <span class="step-name">Effets</span>
+          <span class="step-status">—</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step-export">
+          <span class="step-icon">📦</span>
+          <span class="step-name">Export</span>
+          <span class="step-status">—</span>
+        </div>
+      </div>
+
+      <div class="current-step-label" id="current-step-label">Démarrage...</div>
+    </section>
+
+    <!-- ── RÉSULTATS ── -->
+    <section class="card results-card hidden" id="results-section">
+      <div class="results-header">
+        <h2 class="section-title">🎉 Tes Shorts sont prêts !</h2>
+        <button class="btn-download-all" id="btn-download-all">
+          <span>📦</span> Tout télécharger (ZIP)
+        </button>
+      </div>
+
+      <div class="shorts-grid" id="shorts-grid">
+        <!-- Injecté dynamiquement -->
+      </div>
+
+      <div class="results-actions">
+        <button class="btn-restart" id="btn-restart">
+          ↩ Traiter une autre vidéo
+        </button>
+      </div>
+    </section>
+
+    <!-- ── ERREUR ── -->
+    <section class="card error-card hidden" id="error-section">
+      <div class="error-icon">⚠️</div>
+      <h2 class="error-title">Une erreur est survenue</h2>
+      <p class="error-msg" id="error-msg">Erreur inconnue</p>
+      <div class="error-tips">
+        <strong>Vérifications :</strong>
+        <ul>
+          <li>FFmpeg est installé : <code>ffmpeg -version</code></li>
+          <li>Ollama est lancé : <code>ollama serve</code></li>
+          <li>La vidéo n'est pas corrompue</li>
+          <li>Assez d'espace disque disponible</li>
+        </ul>
+      </div>
+      <button class="btn-restart" id="btn-retry">↩ Réessayer</button>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <span>AI Clipper — 100% local, 100% privé</span>
+    <span>RTX 5070 · Whisper · YOLO · Ollama</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
